@@ -1,0 +1,217 @@
+/* assets/chat.css */
+.ygb-chat-widget {
+    position: fixed;
+    z-index: 999999;
+}
+
+.ygb-chat-button {
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+    position: relative;
+    background: none;
+    padding: 0;
+}
+
+.ygb-chat-tooltip {
+    position: absolute;
+    bottom: 70px;
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    display: none;
+    pointer-events: none;
+}
+
+.ygb-chat-widget[data-position="right"] .ygb-chat-tooltip {
+    right: 0;
+}
+
+.ygb-chat-widget[data-position="left"] .ygb-chat-tooltip {
+    left: 0;
+}
+
+.ygb-chat-button:hover + .ygb-chat-tooltip {
+    display: block;
+}
+
+.ygb-chat-button span {
+    line-height: 1;
+    color: white;
+}
+
+.ygb-chat-button img {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.ygb-chat-window {
+    position: absolute;
+    bottom: 80px;
+    width: 320px;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    display: none;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ygb-chat-widget[data-position="right"] .ygb-chat-window {
+    right: 0;
+}
+
+.ygb-chat-widget[data-position="left"] .ygb-chat-window {
+    left: 0;
+}
+
+.ygb-chat-header {
+    padding: 15px 20px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: 500;
+}
+
+.ygb-chat-header button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 5px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.ygb-chat-header button:hover {
+    opacity: 1;
+}
+
+.ygb-chat-body {
+    padding: 20px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.ygb-chat-message {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    max-width: 85%;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.ygb-chat-message.bot {
+    background: white;
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.ygb-chat-product {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: white;
+    border-left: 4px solid #25D366;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ygb-chat-product small {
+    color: #25D366;
+    font-weight: 500;
+    display: block;
+    margin-top: 5px;
+}
+
+.ygb-chat-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.ygb-chat-footer textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    background: white;
+}
+
+.ygb-chat-footer textarea:focus {
+    outline: none;
+    border-color: #25D366;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+}
+
+.ygb-chat-footer button {
+    width: 100%;
+    padding: 12px 20px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.ygb-chat-footer button:hover {
+    background: #128C7E;
+}
+
+/* Custom scrollbar */
+.ygb-chat-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ygb-chat-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.ygb-chat-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.ygb-chat-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .ygb-chat-window {
+        width: calc(100vw - 40px);
+        max-width: 320px;
+    }
+}

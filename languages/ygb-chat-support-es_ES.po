@@ -1,0 +1,420 @@
+# Copyright (C) 2024 YGB
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: YGB Chat Support 3.0.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ygb-chat-support\n"
+"POT-Creation-Date: 2024-04-02T10:00:00+00:00\n"
+"PO-Revision-Date: 2026-04-03 02:26-0400\n"
+"Last-Translator: YGB <support@ygb.com>\n"
+"Language-Team: YGB <support@ygb.com>\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.9\n"
+
+#: ygb-chat-support.php:87
+msgid "Please wait before sending another message"
+msgstr "Por favor, espera antes de enviar otro mensaje"
+
+#: ygb-chat-support.php:118
+msgid "Phone number must have between 10 and 15 digits (country code + number)."
+msgstr "El número de teléfono debe tener entre 10 y 15 dígitos (código de país + número)."
+
+#: ygb-chat-support.php:207
+msgid "Chat with support"
+msgstr "Chatear con soporte"
+
+#: ygb-chat-support.php:241
+msgid "How can we help you?"
+msgstr "¿Cómo podemos ayudarte?"
+
+#. translators: 1: User name, 2: Welcome message
+#: ygb-chat-support.php:244
+msgid "Hello %1$s, %2$s"
+msgstr "Hola %1$s, %2$s"
+
+#: ygb-chat-support.php:263
+msgid "Open chat"
+msgstr "Abrir chat"
+
+#: ygb-chat-support.php:267
+msgid "Chat icon"
+msgstr "Icono de chat"
+
+#: ygb-chat-support.php:277
+msgid "Close chat"
+msgstr "Cerrar chat"
+
+#: ygb-chat-support.php:282
+msgid "Chat Support"
+msgstr "Soporte por chat"
+
+#: ygb-chat-support.php:292
+msgid "Type your message..."
+msgstr "Escribe tu mensaje..."
+
+#: ygb-chat-support.php:295
+msgid "Start chat"
+msgstr "Iniciar chat"
+
+#: ygb-chat-support.php:418
+msgid "Please type a message"
+msgstr "Por favor, escribe un mensaje"
+
+#: ygb-chat-support.php:454
+msgid "You have sent too many messages. Please wait a few minutes."
+msgstr "Has enviado demasiados mensajes. Por favor, espera unos minutos."
+
+#: ygb-chat-support.php:471
+msgid "Invalid or expired nonce"
+msgstr "Nonce inválido o expirado"
+
+#. translators: %d: Maximum allowed attempts
+#: ygb-chat-support.php:491
+msgid "You have exceeded the limit of %d messages. Please wait a few minutes."
+msgstr "Has superado el límite de %d mensajes. Por favor, espera unos minutos."
+
+#. translators: %d: Maximum message length
+#: ygb-chat-support.php:506
+msgid "Message is too long. Maximum %d characters."
+msgstr "El mensaje es demasiado largo. Máximo %d caracteres."
+
+#: ygb-chat-support.php:514
+msgid "Message cannot be empty"
+msgstr "El mensaje no puede estar vacío"
+
+#: ygb-chat-support.php:536
+msgid "Message contains prohibited content"
+msgstr "El mensaje contiene contenido prohibido"
+
+#: ygb-chat-support.php:540
+msgid "Visitor"
+msgstr "Visitante"
+
+#. translators: %s: Site name
+#: ygb-chat-support.php:557
+msgid "🔔 Someone needs attention! - %s"
+msgstr "🔔 ¡Alguien necesita atención! - %s"
+
+#: ygb-chat-support.php:562
+msgid "IMMEDIATE ATTENTION\n"
+msgstr "ATENCIÓN INMEDIATA\n"
+
+#: ygb-chat-support.php:565
+msgid "👤 USER: %s\n"
+msgstr "👤 USUARIO: %s\n"
+
+#: ygb-chat-support.php:569
+msgid "📧 EMAIL: %s\n"
+msgstr "📧 CORREO: %s\n"
+
+#: ygb-chat-support.php:572
+msgid "💬 MESSAGE: %s\n"
+msgstr "💬 MENSAJE: %s\n"
+
+#: ygb-chat-support.php:573
+msgid "📍 PAGE: %s\n"
+msgstr "📍 PÁGINA: %s\n"
+
+#: ygb-chat-support.php:574
+msgid "⏰ DATE: %s\n"
+msgstr "⏰ FECHA: %s\n"
+
+#: ygb-chat-support.php:575
+msgid "🌐 IP: %s\n"
+msgstr "🌐 IP: %s\n"
+
+#: ygb-chat-support.php:577
+msgid "🖥️ USER AGENT: %s\n"
+msgstr "🖥️ AGENTE DE USUARIO: %s\n"
+
+#: ygb-chat-support.php:579
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: ygb-chat-support.php:582
+msgid "⚠️ The user has started a chat and is waiting for your response.\n"
+msgstr "⚠️ El usuario ha iniciado un chat y está esperando tu respuesta.\n"
+
+#: ygb-chat-support.php:583
+msgid "💬 Reply directly from the chat to continue the conversation.\n"
+msgstr "💬 Responde directamente desde el chat para continuar la conversación.\n"
+
+#: ygb-chat-support.php:585
+msgid "🔗 Direct link: https://wa.me/%s\n"
+msgstr "🔗 Enlace directo: https://wa.me/%s\n"
+
+#: ygb-chat-support.php:597
+msgid "Notification sent successfully"
+msgstr "Notificación enviada correctamente"
+
+#: ygb-chat-support.php:604
+msgid "Error sending notification"
+msgstr "Error al enviar la notificación"
+
+#: ygb-chat-support.php:612 ygb-chat-support.php:613
+msgid "YGB Chat Support Settings"
+msgstr "Ajustes de YGB Chat Support"
+
+#: ygb-chat-support.php:613
+msgid "YGB Chat Support"
+msgstr "YGB Chat Support"
+
+#: ygb-chat-support.php:630
+msgid "WhatsApp number with country code"
+msgstr "Número de WhatsApp con código de país"
+
+#: ygb-chat-support.php:638
+msgid "Email to receive notifications"
+msgstr "Correo electrónico para recibir notificaciones"
+
+#: ygb-chat-support.php:708
+msgid "You do not have sufficient permissions to access this page."
+msgstr "No tienes permisos suficientes para acceder a esta página."
+
+#: ygb-chat-support.php:712
+msgid "YGB Chat Support Settings v%s"
+msgstr "Ajustes de YGB Chat Support v%s"
+
+#: ygb-chat-support.php:717
+msgid "🔒 Enhanced security in this version:"
+msgstr "🔒 Seguridad mejorada en esta versión:"
+
+#. translators: 1: Maximum messages, 2: Minutes
+#: ygb-chat-support.php:720
+msgid "✅ Rate limiting: Maximum %d messages every %d minutes"
+msgstr "✅ Límite de tasa: Máximo %d mensajes cada %d minutos"
+
+#. translators: %d: Maximum message length
+#: ygb-chat-support.php:721
+msgid "✅ Message limit: %d characters"
+msgstr "✅ Límite de mensaje: %d caracteres"
+
+#: ygb-chat-support.php:722
+msgid "✅ Built-in anti-spam filter"
+msgstr "✅ Filtro antispam integrado"
+
+#: ygb-chat-support.php:723
+msgid "✅ Phone number validation"
+msgstr "✅ Validación de número de teléfono"
+
+#: ygb-chat-support.php:724
+msgid "✅ CSRF protection with nonces"
+msgstr "✅ Protección CSRF con nonces"
+
+#: ygb-chat-support.php:725
+msgid "✅ Complete input sanitization"
+msgstr "✅ Sanitización completa de entradas"
+
+#: ygb-chat-support.php:730
+msgid "General Settings"
+msgstr "Ajustes generales"
+
+#: ygb-chat-support.php:734
+msgid "Chat Number"
+msgstr "Número de chat"
+
+#: ygb-chat-support.php:739
+msgid "Only numbers"
+msgstr "Solo números"
+
+#: ygb-chat-support.php:740
+msgid "International format: country code + number (only numbers, no symbols). Example: 521234567890"
+msgstr "Formato internacional: código de país + número (solo números, sin símbolos). Ejemplo: 521234567890"
+
+#: ygb-chat-support.php:746
+msgid "Notification Email"
+msgstr "Correo de notificación"
+
+#: ygb-chat-support.php:751
+msgid "Receive email copies of messages"
+msgstr "Recibir copias por correo de los mensajes"
+
+#: ygb-chat-support.php:757
+msgid "Welcome Message"
+msgstr "Mensaje de bienvenida"
+
+#: ygb-chat-support.php:763
+msgid "For logged-in users, \"Hello [name]\" will be added automatically"
+msgstr "Para usuarios conectados, se añadirá automáticamente \"Hola [nombre]\""
+
+#: ygb-chat-support.php:769
+msgid "Tooltip Text"
+msgstr "Texto del tooltip"
+
+#: ygb-chat-support.php:774
+msgid "Text that appears when hovering over the button"
+msgstr "Texto que aparece al pasar el cursor sobre el botón"
+
+#: ygb-chat-support.php:780
+msgid "Tooltip Background Color"
+msgstr "Color de fondo del tooltip"
+
+#: ygb-chat-support.php:791
+msgid "Tooltip Text Color"
+msgstr "Color del texto del tooltip"
+
+#: ygb-chat-support.php:802
+msgid "Custom Logo"
+msgstr "Logo personalizado"
+
+#: ygb-chat-support.php:808
+msgid "Select Image"
+msgstr "Seleccionar imagen"
+
+#: ygb-chat-support.php:809
+msgid "Remove Logo"
+msgstr "Quitar logo"
+
+#: ygb-chat-support.php:812
+msgid "Logo preview"
+msgstr "Vista previa del logo"
+
+#: ygb-chat-support.php:820
+msgid "Logo Size (%)"
+msgstr "Tamaño del logo (%)"
+
+#: ygb-chat-support.php:825
+msgid "Size of logo inside button (30-100%)"
+msgstr "Tamaño del logo dentro del botón (30-100%)"
+
+#: ygb-chat-support.php:831
+msgid "Button Color"
+msgstr "Color del botón"
+
+#: ygb-chat-support.php:842
+msgid "Button Hover Color"
+msgstr "Color del botón al pasar el cursor"
+
+#: ygb-chat-support.php:853
+msgid "Position"
+msgstr "Posición"
+
+#: ygb-chat-support.php:855
+msgid "Right"
+msgstr "Derecha"
+
+#: ygb-chat-support.php:856
+msgid "Left"
+msgstr "Izquierda"
+
+#: ygb-chat-support.php:863
+msgid "Chat Background Color"
+msgstr "Color de fondo del chat"
+
+#: ygb-chat-support.php:873
+msgid "Desktop Settings"
+msgstr "Ajustes de escritorio"
+
+#: ygb-chat-support.php:877
+msgid "Icon Size (px)"
+msgstr "Tamaño del icono (px)"
+
+#: ygb-chat-support.php:882
+msgid "Button diameter on desktop (30-120px)"
+msgstr "Diámetro del botón en escritorio (30-120px)"
+
+#: ygb-chat-support.php:888
+msgid "Horizontal Offset (px)"
+msgstr "Desplazamiento horizontal (px)"
+
+#: ygb-chat-support.php:893
+msgid "Distance from left/right edge on desktop"
+msgstr "Distancia desde el borde izquierdo/derecho en escritorio"
+
+#: ygb-chat-support.php:899
+msgid "Vertical Offset (px)"
+msgstr "Desplazamiento vertical (px)"
+
+#: ygb-chat-support.php:904
+msgid "Distance from bottom edge on desktop"
+msgstr "Distancia desde el borde inferior en escritorio"
+
+#: ygb-chat-support.php:911
+msgid "Mobile Settings"
+msgstr "Ajustes móviles"
+
+#: ygb-chat-support.php:912
+msgid "These settings apply when screen width is 768px or less"
+msgstr "Estos ajustes se aplican cuando el ancho de pantalla es de 768px o menos"
+
+#: ygb-chat-support.php:916
+msgid "Icon Size (px) - Mobile"
+msgstr "Tamaño del icono (px) - Móvil"
+
+#: ygb-chat-support.php:921
+msgid "Button diameter on mobile (30-100px)"
+msgstr "Diámetro del botón en móvil (30-100px)"
+
+#: ygb-chat-support.php:927
+msgid "Horizontal Offset (px) - Mobile"
+msgstr "Desplazamiento horizontal (px) - Móvil"
+
+#: ygb-chat-support.php:932
+msgid "Distance from left/right edge on mobile"
+msgstr "Distancia desde el borde izquierdo/derecho en móvil"
+
+#: ygb-chat-support.php:938
+msgid "Vertical Offset (px) - Mobile"
+msgstr "Desplazamiento vertical (px) - Móvil"
+
+#: ygb-chat-support.php:943
+msgid "Distance from bottom edge on mobile"
+msgstr "Distancia desde el borde inferior en móvil"
+
+#: ygb-chat-support.php:947
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: ygb-chat-support.php:952
+msgid "🔒 Security:"
+msgstr "🔒 Seguridad:"
+
+#: ygb-chat-support.php:952
+msgid "This plugin has been audited and hardened following WordPress security best practices."
+msgstr "Este plugin ha sido auditado y endurecido siguiendo las mejores prácticas de seguridad de WordPress."
+
+#: ygb-chat-support.php:953
+msgid "📝 Note:"
+msgstr "📝 Nota:"
+
+#: ygb-chat-support.php:953
+msgid "Messages are sent directly to the chat platform. Email notifications are optional."
+msgstr "Los mensajes se envían directamente a la plataforma de chat. Las notificaciones por correo son opcionales."
+
+#: ygb-chat-support.php:954
+msgid "🛡️ Protection:"
+msgstr "🛡️ Protección:"
+
+#. translators: 1: Maximum messages, 2: Minutes
+#: ygb-chat-support.php:954
+msgid "Rate limiting active: maximum %d messages every %d minutes per IP"
+msgstr "Límite de tasa activo: máximo %d mensajes cada %d minutos por IP"
+
+#: ygb-chat-support.php:962
+msgid "Select Logo"
+msgstr "Seleccionar logo"
+
+#: ygb-chat-support.php:979
+msgid "Are you sure you want to remove the logo?"
+msgstr "¿Estás seguro de que quieres eliminar el logo?"
+
+#: ygb-chat-support.php (nuevo - mejora de roles)
+msgid "You do not have permission to send messages."
+msgstr "No tienes permiso para enviar mensajes."
+
+#: assets/chat.css:247
+msgid "Select Image"
+msgstr "Seleccionar imagen"
+
+#: assets/chat.css:248
+msgid "Remove Logo"
+msgstr "Quitar logo"
+
+#: assets/chat.css:256
+msgid "Logo preview"
+msgstr "Vista previa del logo"
+

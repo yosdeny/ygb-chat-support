@@ -1,53 +1,35 @@
+```
+# Logs and temp files
 *.log
 *.tmp
 *.swp
-*.pyc
-pycache/
-dist/
-build/
-.venv/
-venv/
-node_modules/
+
+# Environment
 .env
 .env.local
-.env.
+*.env.*
+
+# Editors
 .vscode/
 .idea/
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-Thumbs.db
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+*.map
+
+# PHP specific
+*.php~
+*.bak
+*.backup
+
+# OS generated files
 .DS_Store
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-coverage/
-htmlcov/
-.coverage
-.mypy_cache/
-.pytest_cache/
-target/
-.gradle/
+Thumbs.db
+```

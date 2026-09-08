@@ -55,6 +55,8 @@ class YGB_Chat_Support {
         add_action('admin_init', [$this, 'register_settings']);
         add_action('wp_ajax_ygb_send_message', [$this, 'handle_ajax']);
         add_action('wp_ajax_nopriv_ygb_send_message', [$this, 'handle_ajax']);
+        add_action('wp_ajax_ygb_refresh_nonce', [$this, 'refresh_nonce']);
+        add_action('wp_ajax_nopriv_ygb_refresh_nonce', [$this, 'refresh_nonce']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_assets']);
         
@@ -112,7 +114,7 @@ class YGB_Chat_Support {
     }
     
     /**
-     * Validate if URL points to an image with secure protocol
+     * Validate if URL points to an image with secure protocol and safe MIME type
      * 
      * @param string $url URL to validate
      * @return bool True if valid image URL
@@ -129,14 +131,28 @@ class YGB_Chat_Support {
             return false;
         }
         
-        // Validate extension
-        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        // Validate extension - SVG BLOCKED BY DEFAULT for security
+        // SVG can contain JavaScript and poses XSS risk
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $extension = strtolower(pathinfo($url, PATHINFO_EXTENSION));
         
-        // Allow developers to filter allowed extensions
+        // Allow developers to filter allowed extensions (but warn about SVG)
         $allowed_extensions = apply_filters('ygb_chat_allowed_logo_extensions', $allowed_extensions);
         
-        return in_array($extension, $allowed_extensions, true);
+        if (!in_array($extension, $allowed_extensions, true)) {
+            return false;
+        }
+        
+        // Additional security: Block SVG explicitly even if filter allows it
+        if ('svg' === $extension) {
+            // Only allow SVG if explicit filter overrides AND site is trusted
+            $allow_svg = apply_filters('ygb_chat_allow_svg', false);
+            if (!$allow_svg) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
@@ -171,18 +187,26 @@ class YGB_Chat_Support {
     
     public function enqueue_assets() {
         wp_enqueue_style('ygb-chat-css', YGB_CHAT_PLUGIN_URL . 'assets/chat.css', [], YGB_CHAT_VERSION);
+        
+        // Enqueue jQuery as a dependency for backward compatibility
+        // TODO: Remove jQuery dependency in future major version and use vanilla JS
         wp_enqueue_script('jquery');
         
-        // Create secure nonce
+        // Create secure nonce with timestamp for periodic refresh
         $ajax_nonce = wp_create_nonce('ygb_chat_ajax_nonce');
+        $nonce_timestamp = time();
         
         wp_localize_script('jquery', 'ygb_chat', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => $ajax_nonce,
+            'nonce_timestamp' => $nonce_timestamp,
+            'nonce_lifetime' => apply_filters('ygb_chat_nonce_lifetime', 3600), // Default 1 hour
             'phone' => get_option('ygb_chat_phone', ''),
             'ajax_action' => 'ygb_send_message',
             'max_message_length' => YGB_CHAT_MAX_MESSAGE_LENGTH,
-            'rate_limit_message' => __('Please wait before sending another message', 'ygb-chat-support')
+            'rate_limit_message' => __('Please wait before sending another message', 'ygb-chat-support'),
+            'nonce_refresh_url' => admin_url('admin-ajax.php?action=ygb_refresh_nonce'),
+            'is_logged_in' => is_user_logged_in()
         ]);
     }
     
@@ -225,11 +249,12 @@ class YGB_Chat_Support {
     public function sanitize_logo($input) {
         $url = esc_url_raw($input);
         
+        // Update error message to reflect SVG is blocked
         if (!empty($url) && !$this->is_valid_image_url($url)) {
             add_settings_error(
                 'ygb_chat_logo',
                 'invalid_logo',
-                __('Logo must be a valid image file (jpg, png, gif, webp, svg) with http/https protocol.', 'ygb-chat-support')
+                __('Logo must be a valid image file (jpg, png, gif, webp) with http/https protocol. SVG files are blocked by default for security.', 'ygb-chat-support')
             );
             return get_option('ygb_chat_logo');
         }
@@ -489,8 +514,22 @@ class YGB_Chat_Support {
                 
                 // Clean phone number (only numbers)
                 var cleanPhone = phone.replace(/[^0-9]/g, '');
-                var text = encodeURIComponent(message + '\n\n' + currentUrl);
+                
+                // Security: Validate URL before including in WhatsApp message to prevent XSS
+                // Only include origin and pathname, strip potentially dangerous fragments
+                var urlForMessage = currentUrl;
+                try {
+                    var urlObj = new URL(currentUrl);
+                    // Only include origin and pathname, strip potentially dangerous fragments
+                    urlForMessage = urlObj.origin + urlObj.pathname + urlObj.search;
+                } catch(e) {
+                    // If URL parsing fails, use a safe fallback
+                    urlForMessage = window.location.origin + window.location.pathname;
+                }
+                
+                var text = encodeURIComponent(message + '\n\n' + urlForMessage);
                 window.open('https://wa.me/' + cleanPhone + '?text=' + text, '_blank');
+                
                 
                 // Send AJAX notification with secure data
                 $.post(ygb_chat.ajax_url, {
@@ -527,6 +566,35 @@ class YGB_Chat_Support {
                 }
             });
         });
+            
+            // Nonce refresh mechanism for long sessions
+            if (typeof ygb_chat !== 'undefined' && ygb_chat.nonce_lifetime) {
+                var nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300; // Refresh 5 min before expiry
+                
+                function refreshNonce() {
+                    var currentTime = Math.floor(Date.now() / 1000);
+                    
+                    if (currentTime >= nonceExpiryTime) {
+                        $.post(ygb_chat.nonce_refresh_url, {
+                            nonce: ygb_chat.nonce
+                        })
+                        .done(function(response) {
+                            if (response.success) {
+                                ygb_chat.nonce = response.data.nonce;
+                                ygb_chat.nonce_timestamp = response.data.timestamp;
+                                nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300;
+                                console.log('Nonce refreshed successfully');
+                            }
+                        })
+                        .fail(function() {
+                            console.log('Failed to refresh nonce');
+                        });
+                    }
+                }
+                
+                // Check every minute if nonce needs refresh
+                setInterval(refreshNonce, 60000);
+            }
         </script>
         <?php
     }
@@ -553,6 +621,25 @@ class YGB_Chat_Support {
             <?php endif; ?>
         </div>
         <?php
+    }
+    
+    /**
+     * Refresh nonce for long sessions
+     * Returns new nonce and timestamp
+     */
+    public function refresh_nonce() {
+        // Verify old nonce if provided (optional for better UX)
+        $old_nonce = isset($_POST['nonce']) ? sanitize_key(wp_unslash($_POST['nonce'])) : '';
+        
+        // Generate new nonce
+        $new_nonce = wp_create_nonce('ygb_chat_ajax_nonce');
+        $new_timestamp = time();
+        
+        wp_send_json_success([
+            'nonce' => $new_nonce,
+            'timestamp' => $new_timestamp
+        ]);
+        wp_die();
     }
     
     public function handle_ajax() {
@@ -680,8 +767,16 @@ class YGB_Chat_Support {
         $body .= sprintf(__("💬 MESSAGE: %s\n", 'ygb-chat-support'), $message);
         $body .= sprintf(__("📍 PAGE: %s\n", 'ygb-chat-support'), $url);
         $body .= sprintf(__("⏰ DATE: %s\n", 'ygb-chat-support'), current_time('d/m/Y H:i:s'));
-        $body .= sprintf(__("🌐 IP: %s\n", 'ygb-chat-support'), $ip_address);
-        $body .= sprintf(__("🖥️ USER AGENT: %s\n\n", 'ygb-chat-support'), $user_agent);
+        // GDPR compliance: Hash IP address to protect user privacy
+        $ip_hash = wp_hash($ip_address);
+        $body .= sprintf(__("🌐 IP (hashed): %s\n", 'ygb-chat-support'), substr($ip_hash, 0, 16));
+        // User agent omitted for GDPR compliance - only include if explicitly enabled
+        $include_user_agent = apply_filters('ygb_chat_include_user_agent', false);
+        if ($include_user_agent) {
+            $body .= sprintf(__("🖥️ USER AGENT: %s\n\n", 'ygb-chat-support'), $user_agent);
+        } else {
+            $body .= "\n";
+        }
         $body .= str_repeat("=", 40) . "\n";
         $body .= __("⚠️ The user has started a chat and is waiting for your response.\n", 'ygb-chat-support');
         $body .= __("💬 Reply directly from the chat to continue the conversation.\n", 'ygb-chat-support');

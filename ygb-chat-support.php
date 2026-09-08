@@ -191,6 +191,18 @@ class YGB_Chat_Support {
     public function enqueue_assets() {
         wp_enqueue_style('ygb-chat-css', YGB_CHAT_PLUGIN_URL . 'assets/chat.css', [], YGB_CHAT_VERSION);
         
+        // Get user info if logged in
+        $user_name = '';
+        $user_email = '';
+        if (is_user_logged_in()) {
+            $current_user = wp_get_current_user();
+            $user_name = esc_html($current_user->display_name);
+            if (empty($user_name)) {
+                $user_name = esc_html($current_user->user_login);
+            }
+            $user_email = sanitize_email($current_user->user_email);
+        }
+        
         // Create secure nonce with timestamp for periodic refresh
         $ajax_nonce = wp_create_nonce('ygb_chat_ajax_nonce');
         $nonce_timestamp = time();
@@ -198,7 +210,7 @@ class YGB_Chat_Support {
         // Enqueue inline script with vanilla JS (no jQuery dependency)
         wp_add_inline_script(
             'wp-i18n',
-            $this->get_chat_script($ajax_nonce, $nonce_timestamp),
+            $this->get_chat_script($ajax_nonce, $nonce_timestamp, $user_name, $user_email),
             'after'
         );
         
@@ -236,9 +248,11 @@ class YGB_Chat_Support {
      * 
      * @param string $nonce Current nonce
      * @param int $timestamp Nonce timestamp
+     * @param string $user_name User name (empty if not logged in)
+     * @param string $user_email User email (empty if not logged in)
      * @return string JavaScript code
      */
-    private function get_chat_script($nonce, $timestamp) {
+    private function get_chat_script($nonce, $timestamp, $user_name = '', $user_email = '') {
         ob_start();
         ?>
         (function() {

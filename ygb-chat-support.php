@@ -3,7 +3,7 @@
  * Plugin Name: YGB Chat Support
  * Plugin URI: https://github.com/yosdeny
  * Description: Secure chat widget with WhatsApp integration and WooCommerce support - Fully hardened version
- * Version: 3.0.2
+ * Version: 3.0.3
  * Author: YGB
  * Author URI: https://github.com/yosdeny
  * Requires at least: 7.0

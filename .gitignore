@@ -1,1 +1,35 @@
-(readme.txt is a source/config file, and there are no build artifacts, dependencies, or temp files in the changes)
+```
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+*.map
+
+# PHP specific
+*.php~
+*.bak
+*.backup
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```

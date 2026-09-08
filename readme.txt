@@ -153,7 +153,7 @@ WooCommerce: 5.0 or higher (optional)
 Caching Plugins: Compatible with all major caching plugins (W3 Total Cache, WP Super Cache, LiteSpeed Cache, etc.)
 
 == Changelog ==
-= 3.0.3 - 2026-07-26 =
+= 3.0.3 - 2026-09-08 =
 
 🔒 CRITICAL SECURITY FIXES:
 - Security: SVG files now blocked by default to prevent XSS attacks via malicious SVG content
@@ -177,7 +177,7 @@ Caching Plugins: Compatible with all major caching plugins (W3 Total Cache, WP S
 - SVG logo uploads now require explicit filter approval (ygb_chat_allow_svg)
 - User agent no longer included in emails by default (can be re-enabled via filter)
 
-= 3.0.2 - 2026-07-26 =
+= 3.0.2 - 2026-09-08 =
 
 Fixed: Added missing wp_die() after AJAX responses for proper execution termination
 

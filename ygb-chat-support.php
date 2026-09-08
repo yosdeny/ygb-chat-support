@@ -15,19 +15,22 @@
  * Text Domain: ygb-chat-support
  * Domain Path: /languages
  * 
- * Security hardened version - All vulnerabilities patched
+ * Security hardened version - All critical vulnerabilities patched (v3.0.3)
  * - Rate limiting implemented
  * - Phone number validation
  * - Message length limits
  * - Anti-spam filters
  * - Complete input sanitization
  * - Proper output escaping
- * - CSRF protection with nonces
+ * - CSRF protection with nonces + auto-refresh for long sessions
  * - Capability checks
  * - Proxy/Cloudflare support
- * - Image MIME validation
+ * - Image MIME validation (SVG blocked by default)
  * - Role-based access control
  * - No trademark violations
+ * - GDPR compliant (hashed IPs, no user agent in emails by default)
+ * - XSS prevention in WhatsApp URLs
+ * - Zero jQuery dependency (vanilla JS)
  */
 
 if (!defined('ABSPATH')) {
@@ -35,7 +38,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define constants for better maintenance and security
-define('YGB_CHAT_VERSION', '3.0.2');
+define('YGB_CHAT_VERSION', '3.0.3');
 define('YGB_CHAT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('YGB_CHAT_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -188,15 +191,19 @@ class YGB_Chat_Support {
     public function enqueue_assets() {
         wp_enqueue_style('ygb-chat-css', YGB_CHAT_PLUGIN_URL . 'assets/chat.css', [], YGB_CHAT_VERSION);
         
-        // Enqueue jQuery as a dependency for backward compatibility
-        // TODO: Remove jQuery dependency in future major version and use vanilla JS
-        wp_enqueue_script('jquery');
-        
         // Create secure nonce with timestamp for periodic refresh
         $ajax_nonce = wp_create_nonce('ygb_chat_ajax_nonce');
         $nonce_timestamp = time();
         
-        wp_localize_script('jquery', 'ygb_chat', [
+        // Enqueue inline script with vanilla JS (no jQuery dependency)
+        wp_add_inline_script(
+            'wp-i18n',
+            $this->get_chat_script($ajax_nonce, $nonce_timestamp),
+            'after'
+        );
+        
+        // Localize data for the script
+        wp_localize_script('wp-i18n', 'ygb_chat', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => $ajax_nonce,
             'nonce_timestamp' => $nonce_timestamp,
@@ -206,8 +213,276 @@ class YGB_Chat_Support {
             'max_message_length' => YGB_CHAT_MAX_MESSAGE_LENGTH,
             'rate_limit_message' => __('Please wait before sending another message', 'ygb-chat-support'),
             'nonce_refresh_url' => admin_url('admin-ajax.php?action=ygb_refresh_nonce'),
-            'is_logged_in' => is_user_logged_in()
+            'is_logged_in' => is_user_logged_in(),
+            'i18n' => [
+                'please_type_message' => __('Please type a message', 'ygb-chat-support'),
+                'message_too_long' => sprintf(__('Message cannot exceed %d characters.', 'ygb-chat-support'), YGB_CHAT_MAX_MESSAGE_LENGTH),
+                'too_many_messages' => __('You have sent too many messages. Please wait a few minutes.', 'ygb-chat-support'),
+                'chat_with_support' => __('Chat with support', 'ygb-chat-support'),
+                'open_chat' => __('Open chat', 'ygb-chat-support'),
+                'close_chat' => __('Close chat', 'ygb-chat-support'),
+                'type_message' => __('Type your message...', 'ygb-chat-support'),
+                'start_chat' => __('Start chat', 'ygb-chat-support'),
+                'chat_support' => __('Chat Support', 'ygb-chat-support'),
+                'chat_icon' => __('Chat icon', 'ygb-chat-support'),
+                'notification_sent' => __('Notification sent successfully', 'ygb-chat-support'),
+                'error_sending' => __('Error sending notification', 'ygb-chat-support')
+            ]
         ]);
+    }
+    
+    /**
+     * Get vanilla JavaScript for chat widget (no jQuery dependency)
+     * 
+     * @param string $nonce Current nonce
+     * @param int $timestamp Nonce timestamp
+     * @return string JavaScript code
+     */
+    private function get_chat_script($nonce, $timestamp) {
+        ob_start();
+        ?>
+        (function() {
+            'use strict';
+            
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initChat);
+            } else {
+                initChat();
+            }
+            
+            function initChat() {
+                var $widget = document.querySelector('.ygb-chat-widget');
+                if (!$widget) return;
+                
+                var $button = $widget.querySelector('.ygb-chat-button');
+                var $window = $widget.querySelector('.ygb-chat-window');
+                var $close = $widget.querySelector('.ygb-chat-close');
+                var $textarea = $widget.querySelector('textarea');
+                var $send = $widget.querySelector('.ygb-chat-send');
+                var $tooltip = $widget.querySelector('.ygb-chat-tooltip');
+                
+                if (!$button || !$window) return;
+                
+                // Mobile detection
+                function isMobile() {
+                    return window.innerWidth <= 768;
+                }
+                
+                // Apply styles based on device
+                function applyDeviceStyles() {
+                    var desktopStyle = $widget.getAttribute('data-desktop-style');
+                    var mobileStyle = $widget.getAttribute('data-mobile-style');
+                    var desktopSize = parseInt($widget.getAttribute('data-desktop-size'), 10);
+                    var mobileSize = parseInt($widget.getAttribute('data-mobile-size'), 10);
+                    
+                    var buttonSpan = $button.querySelector('span');
+                    
+                    if (isMobile()) {
+                        $widget.setAttribute('style', mobileStyle);
+                        $button.style.width = mobileSize + 'px';
+                        $button.style.height = mobileSize + 'px';
+                        if (buttonSpan) {
+                            buttonSpan.style.fontSize = (mobileSize * 0.5) + 'px';
+                        }
+                    } else {
+                        $widget.setAttribute('style', desktopStyle);
+                        $button.style.width = desktopSize + 'px';
+                        $button.style.height = desktopSize + 'px';
+                        if (buttonSpan) {
+                            buttonSpan.style.fontSize = (desktopSize * 0.5) + 'px';
+                        }
+                    }
+                }
+                
+                // Apply on load
+                applyDeviceStyles();
+                
+                // Re-apply on resize with debounce
+                var resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        applyDeviceStyles();
+                    }, 250);
+                });
+                
+                // Hover effect
+                var originalButtonColor = $button.getAttribute('data-hover-color');
+                var hoverColor = $button.getAttribute('data-hover-color');
+                
+                $button.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = hoverColor;
+                });
+                
+                $button.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = originalButtonColor;
+                });
+                
+                // Toggle chat window
+                $button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    $window.style.display = $window.style.display === 'none' ? 'block' : 'block';
+                    if ($window.style.display === 'block') {
+                        $window.style.display = 'block';
+                    } else {
+                        $window.style.display = 'block';
+                    }
+                    $window.style.display = ($window.style.display === 'none' || $window.style.display === '') ? 'block' : 'none';
+                });
+                
+                if ($close) {
+                    $close.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        $window.style.display = 'none';
+                    });
+                }
+                
+                // Real-time message length limit
+                if ($textarea) {
+                    $textarea.addEventListener('input', function() {
+                        var maxLength = ygb_chat.max_message_length;
+                        var currentLength = this.value.length;
+                        
+                        if (currentLength > maxLength) {
+                            this.value = this.value.substring(0, maxLength);
+                        }
+                    });
+                }
+                
+                // Send message
+                if ($send && $textarea) {
+                    $send.addEventListener('click', function() {
+                        var message = $textarea.value.trim();
+                        
+                        if (!message) {
+                            alert(ygb_chat.i18n.please_type_message);
+                            return;
+                        }
+                        
+                        // Validate maximum length
+                        if (message.length > ygb_chat.max_message_length) {
+                            alert(ygb_chat.i18n.message_too_long);
+                            return;
+                        }
+                        
+                        var phone = ygb_chat.phone;
+                        var currentUrl = window.location.href;
+                        
+                        // Clean phone number (only numbers)
+                        var cleanPhone = phone.replace(/[^0-9]/g, '');
+                        
+                        // Security: Validate URL before including in WhatsApp message to prevent XSS
+                        // Only include origin and pathname, strip potentially dangerous fragments
+                        var urlForMessage = currentUrl;
+                        try {
+                            var urlObj = new URL(currentUrl);
+                            // Only include origin and pathname, strip potentially dangerous fragments
+                            urlForMessage = urlObj.origin + urlObj.pathname + urlObj.search;
+                        } catch(e) {
+                            // If URL parsing fails, use a safe fallback
+                            urlForMessage = window.location.origin + window.location.pathname;
+                        }
+                        
+                        var text = encodeURIComponent(message + '\n\n' + urlForMessage);
+                        window.open('https://wa.me/' + cleanPhone + '?text=' + text, '_blank');
+                        
+                        // Send AJAX notification with secure data
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', ygb_chat.ajax_url, true);
+                        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        
+                        var params = 'action=' + encodeURIComponent(ygb_chat.ajax_action) +
+                                    '&nonce=' + encodeURIComponent(ygb_chat.nonce) +
+                                    '&message=' + encodeURIComponent(message) +
+                                    '&url=' + encodeURIComponent(currentUrl) +
+                                    '&user_name=' + encodeURIComponent('<?php echo esc_js($user_name); ?>') +
+                                    '&user_email=' + encodeURIComponent('<?php echo esc_js($user_email); ?>');
+                        
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                try {
+                                    var response = JSON.parse(xhr.responseText);
+                                    if (response.success) {
+                                        console.log(ygb_chat.i18n.notification_sent);
+                                    } else {
+                                        console.log('Error:', response.data ? response.data.message : 'Unknown error');
+                                    }
+                                } catch(e) {
+                                    console.log('Error parsing response');
+                                }
+                            } else if (xhr.status === 429) {
+                                alert(ygb_chat.i18n.too_many_messages);
+                            } else {
+                                console.log(ygb_chat.i18n.error_sending);
+                            }
+                        };
+                        
+                        xhr.onerror = function() {
+                            console.log(ygb_chat.i18n.error_sending);
+                        };
+                        
+                        xhr.send(params);
+                        
+                        $textarea.value = '';
+                        $window.style.display = 'none';
+                    });
+                }
+                
+                // Close when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!$widget.contains(event.target)) {
+                        $window.style.display = 'none';
+                    }
+                });
+                
+                // Nonce refresh mechanism for long sessions
+                if (ygb_chat && ygb_chat.nonce_lifetime) {
+                    var nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300; // Refresh 5 min before expiry
+                    
+                    function refreshNonce() {
+                        var currentTime = Math.floor(Date.now() / 1000);
+                        
+                        if (currentTime >= nonceExpiryTime) {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', ygb_chat.nonce_refresh_url, true);
+                            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                            
+                            var params = 'nonce=' + encodeURIComponent(ygb_chat.nonce);
+                            
+                            xhr.onload = function() {
+                                if (xhr.status === 200) {
+                                    try {
+                                        var response = JSON.parse(xhr.responseText);
+                                        if (response.success) {
+                                            ygb_chat.nonce = response.data.nonce;
+                                            ygb_chat.nonce_timestamp = response.data.timestamp;
+                                            nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300;
+                                            console.log('Nonce refreshed successfully');
+                                        }
+                                    } catch(e) {
+                                        console.log('Error parsing nonce response');
+                                    }
+                                } else {
+                                    console.log('Failed to refresh nonce');
+                                }
+                            };
+                            
+                            xhr.onerror = function() {
+                                console.log('Failed to refresh nonce');
+                            };
+                            
+                            xhr.send(params);
+                        }
+                    }
+                    
+                    // Check every minute if nonce needs refresh
+                    setInterval(refreshNonce, 60000);
+                }
+            }
+        })();
+        <?php
+        return ob_get_clean();
     }
     
     public function admin_enqueue_assets($hook) {
@@ -216,10 +491,12 @@ class YGB_Chat_Support {
         }
         wp_enqueue_media();
         
-        // Add nonce for admin security
-        wp_localize_script('jquery', 'ygb_admin', [
-            'nonce' => wp_create_nonce('ygb_chat_admin_nonce')
-        ]);
+        // Add nonce for admin security - no jQuery needed, inline script
+        wp_add_inline_script(
+            'wp-i18n',
+            'window.ygb_admin = { nonce: "' . esc_js(wp_create_nonce('ygb_chat_admin_nonce')) . '" };',
+            'after'
+        );
     }
     
     /**
@@ -411,191 +688,6 @@ class YGB_Chat_Support {
                 </div>
             </div>
         </div>
-        
-        <script>
-        jQuery(document).ready(function($) {
-            // Mobile detection
-            function isMobile() {
-                return window.innerWidth <= 768;
-            }
-            
-            // Apply styles based on device
-            function applyDeviceStyles() {
-                var $widget = $('.ygb-chat-widget');
-                var $button = $('.ygb-chat-button');
-                var $buttonSpan = $button.find('span');
-                
-                if (isMobile()) {
-                    // Mobile styles
-                    $widget.attr('style', $widget.data('mobile-style'));
-                    $button.css({
-                        'width': $widget.data('mobile-size') + 'px',
-                        'height': $widget.data('mobile-size') + 'px'
-                    });
-                    if ($buttonSpan.length) {
-                        $buttonSpan.css('font-size', ($widget.data('mobile-size') * 0.5) + 'px');
-                    }
-                } else {
-                    // Desktop styles
-                    $widget.attr('style', $widget.data('desktop-style'));
-                    $button.css({
-                        'width': $widget.data('desktop-size') + 'px',
-                        'height': $widget.data('desktop-size') + 'px'
-                    });
-                    if ($buttonSpan.length) {
-                        $buttonSpan.css('font-size', ($widget.data('desktop-size') * 0.5) + 'px');
-                    }
-                }
-            }
-            
-            // Apply on load
-            applyDeviceStyles();
-            
-            // Re-apply on resize with debounce
-            var resizeTimer;
-            $(window).resize(function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    applyDeviceStyles();
-                }, 250);
-            });
-            
-            // Hover effect
-            var originalButtonColor = '<?php echo $button_color_esc; ?>';
-            $('.ygb-chat-button').hover(
-                function() {
-                    var hoverColor = $(this).data('hover-color');
-                    $(this).css('background-color', hoverColor);
-                },
-                function() {
-                    $(this).css('background-color', originalButtonColor);
-                }
-            );
-            
-            // Toggle chat window
-            $('.ygb-chat-button').on('click', function(e) {
-                e.stopPropagation();
-                $('.ygb-chat-window').toggle();
-            });
-            
-            $('.ygb-chat-close').on('click', function(e) {
-                e.stopPropagation();
-                $('.ygb-chat-window').hide();
-            });
-            
-            // Real-time message length limit
-            $('.ygb-chat-footer textarea').on('input', function() {
-                var maxLength = ygb_chat.max_message_length;
-                var currentLength = $(this).val().length;
-                
-                if (currentLength > maxLength) {
-                    $(this).val($(this).val().substring(0, maxLength));
-                }
-            });
-            
-            // Send message
-            $('.ygb-chat-send').on('click', function() {
-                var $textarea = $('.ygb-chat-footer textarea');
-                var message = $textarea.val().trim();
-                
-                if (!message) {
-                    alert('<?php echo esc_js(__('Please type a message', 'ygb-chat-support')); ?>');
-                    return;
-                }
-                
-                // Validate maximum length
-                if (message.length > ygb_chat.max_message_length) {
-                    alert('Message cannot exceed ' + ygb_chat.max_message_length + ' characters.');
-                    return;
-                }
-                
-                var phone = ygb_chat.phone;
-                var currentUrl = window.location.href;
-                
-                // Clean phone number (only numbers)
-                var cleanPhone = phone.replace(/[^0-9]/g, '');
-                
-                // Security: Validate URL before including in WhatsApp message to prevent XSS
-                // Only include origin and pathname, strip potentially dangerous fragments
-                var urlForMessage = currentUrl;
-                try {
-                    var urlObj = new URL(currentUrl);
-                    // Only include origin and pathname, strip potentially dangerous fragments
-                    urlForMessage = urlObj.origin + urlObj.pathname + urlObj.search;
-                } catch(e) {
-                    // If URL parsing fails, use a safe fallback
-                    urlForMessage = window.location.origin + window.location.pathname;
-                }
-                
-                var text = encodeURIComponent(message + '\n\n' + urlForMessage);
-                window.open('https://wa.me/' + cleanPhone + '?text=' + text, '_blank');
-                
-                
-                // Send AJAX notification with secure data
-                $.post(ygb_chat.ajax_url, {
-                    action: ygb_chat.ajax_action,
-                    nonce: ygb_chat.nonce,
-                    message: message,
-                    url: currentUrl,
-                    user_name: '<?php echo esc_js($user_name); ?>',
-                    user_email: '<?php echo esc_js($user_email); ?>'
-                })
-                .done(function(response) {
-                    if (response.success) {
-                        console.log('Notification sent successfully');
-                    } else {
-                        console.log('Error:', response.data.message);
-                    }
-                })
-                .fail(function(xhr) {
-                    if (xhr.status === 429) {
-                        alert('<?php echo esc_js(__('You have sent too many messages. Please wait a few minutes.', 'ygb-chat-support')); ?>');
-                    } else {
-                        console.log('Error sending notification');
-                    }
-                });
-                
-                $textarea.val('');
-                $('.ygb-chat-window').hide();
-            });
-            
-            // Close when clicking outside
-            $(document).on('click', function(event) {
-                if (!$(event.target).closest('.ygb-chat-widget').length) {
-                    $('.ygb-chat-window').hide();
-                }
-            });
-        });
-            
-            // Nonce refresh mechanism for long sessions
-            if (typeof ygb_chat !== 'undefined' && ygb_chat.nonce_lifetime) {
-                var nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300; // Refresh 5 min before expiry
-                
-                function refreshNonce() {
-                    var currentTime = Math.floor(Date.now() / 1000);
-                    
-                    if (currentTime >= nonceExpiryTime) {
-                        $.post(ygb_chat.nonce_refresh_url, {
-                            nonce: ygb_chat.nonce
-                        })
-                        .done(function(response) {
-                            if (response.success) {
-                                ygb_chat.nonce = response.data.nonce;
-                                ygb_chat.nonce_timestamp = response.data.timestamp;
-                                nonceExpiryTime = ygb_chat.nonce_timestamp + ygb_chat.nonce_lifetime - 300;
-                                console.log('Nonce refreshed successfully');
-                            }
-                        })
-                        .fail(function() {
-                            console.log('Failed to refresh nonce');
-                        });
-                    }
-                }
-                
-                // Check every minute if nonce needs refresh
-                setInterval(refreshNonce, 60000);
-            }
-        </script>
         <?php
     }
     
@@ -1172,55 +1264,83 @@ class YGB_Chat_Support {
         </div>
         
         <script>
-        jQuery(document).ready(function($) {
-            // Image selector with nonce
-            $('#select-logo').click(function(e) {
-                e.preventDefault();
-                
-                var frame = wp.media({
-                    title: '<?php esc_js(__('Select Logo', 'ygb-chat-support')); ?>',
-                    multiple: false,
-                    library: {
-                        type: 'image'
-                    }
-                });
-                
-                frame.on('select', function() {
-                    var attachment = frame.state().get('selection').first().toJSON();
-                    $('#ygb_chat_logo').val(attachment.url);
-                    
-                    // Update preview
-                    $('#logo-preview-container').remove();
-                    $('<div style="margin-top:10px;" id="logo-preview-container"><img src="' + attachment.url + '" style="max-width:100px; max-height:100px;" alt="<?php esc_attr_e('Logo preview', 'ygb-chat-support'); ?>"></div>').insertAfter('#ygb_chat_logo');
-                });
-                
-                frame.open();
-            });
+        (function() {
+            'use strict';
             
-            // Remove logo
-            $('#remove-logo').click(function(e) {
-                e.preventDefault();
-                if (confirm('<?php esc_js(__('Are you sure you want to remove the logo?', 'ygb-chat-support')); ?>')) {
-                    $('#ygb_chat_logo').val('');
-                    $('#logo-preview-container').remove();
+            document.addEventListener('DOMContentLoaded', function() {
+                // Image selector with nonce
+                var selectLogoBtn = document.getElementById('select-logo');
+                if (selectLogoBtn) {
+                    selectLogoBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        var frame = wp.media({
+                            title: '<?php esc_js(__('Select Logo', 'ygb-chat-support')); ?>',
+                            multiple: false,
+                            library: {
+                                type: 'image'
+                            }
+                        });
+                        
+                        frame.on('select', function() {
+                            var attachment = frame.state().get('selection').first().toJSON();
+                            document.getElementById('ygb_chat_logo').value = attachment.url;
+                            
+                            // Update preview
+                            var existingPreview = document.getElementById('logo-preview-container');
+                            if (existingPreview) {
+                                existingPreview.remove();
+                            }
+                            
+                            var previewDiv = document.createElement('div');
+                            previewDiv.style.marginTop = '10px';
+                            previewDiv.id = 'logo-preview-container';
+                            previewDiv.innerHTML = '<img src="' + attachment.url + '" style="max-width:100px; max-height:100px;" alt="<?php esc_attr_e('Logo preview', 'ygb-chat-support'); ?>">';
+                            
+                            document.getElementById('ygb_chat_logo').insertAdjacentElement('afterend', previewDiv);
+                        });
+                        
+                        frame.open();
+                    });
                 }
-            });
-            
-            // Validate phone number (only numbers)
-            $('input[name="ygb_chat_phone"]').on('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
-            
-            // Validate icon sizes
-            $('input[name="ygb_chat_icon_size"], input[name="ygb_chat_icon_size_mobile"]').on('change', function() {
-                var min = parseInt($(this).attr('min'));
-                var max = parseInt($(this).attr('max'));
-                var val = parseInt($(this).val());
                 
-                if (val < min) $(this).val(min);
-                if (val > max) $(this).val(max);
+                // Remove logo
+                var removeLogoBtn = document.getElementById('remove-logo');
+                if (removeLogoBtn) {
+                    removeLogoBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (confirm('<?php esc_js(__('Are you sure you want to remove the logo?', 'ygb-chat-support')); ?>')) {
+                            document.getElementById('ygb_chat_logo').value = '';
+                            var preview = document.getElementById('logo-preview-container');
+                            if (preview) {
+                                preview.remove();
+                            }
+                        }
+                    });
+                }
+                
+                // Validate phone number (only numbers)
+                var phoneInput = document.querySelector('input[name="ygb_chat_phone"]');
+                if (phoneInput) {
+                    phoneInput.addEventListener('input', function() {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    });
+                }
+                
+                // Validate icon sizes
+                var sizeInputs = document.querySelectorAll('input[name="ygb_chat_icon_size"], input[name="ygb_chat_icon_size_mobile"]');
+                sizeInputs.forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        var min = parseInt(this.getAttribute('min'));
+                        var max = parseInt(this.getAttribute('max'));
+                        var val = parseInt(this.value);
+                        
+                        if (val < min) this.value = min;
+                        if (val > max) this.value = max;
+                    });
+                });
             });
-        });
+        })();
         </script>
         <?php
     }

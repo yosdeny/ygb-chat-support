@@ -566,8 +566,7 @@ class YGB_Chat_Support {
                 WHERE option_name LIKE %s 
                 AND option_value < %d
                 LIMIT 1000",
-                '_transient_ygb_chat_rate_%%', // Escaped % for LIKE
-                time() - 86400
+                $wpdb->esc_like('_transient_ygb_chat_rate_') . '%'
             )
         );
     }

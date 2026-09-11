@@ -733,8 +733,14 @@ class YGB_Chat_Support {
      * Returns new nonce and timestamp
      */
     public function refresh_nonce() {
-        // Verify old nonce if provided (optional for better UX)
+        // Verify old nonce if provided (required for security)
         $old_nonce = isset($_POST['nonce']) ? sanitize_key(wp_unslash($_POST['nonce'])) : '';
+        
+        // Verify the old nonce is valid before issuing a new one
+        if (!empty($old_nonce) && !wp_verify_nonce($old_nonce, 'ygb_chat_ajax_nonce')) {
+            wp_send_json_error(['message' => __('Invalid nonce', 'ygb-chat-support')], 403);
+            wp_die();
+        }
         
         // Generate new nonce
         $new_nonce = wp_create_nonce('ygb_chat_ajax_nonce');

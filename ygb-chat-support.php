@@ -964,6 +964,39 @@ class YGB_Chat_Support {
     }
     
     public function register_settings() {
+        // Add settings section
+        add_settings_section(
+            'ygb_chat_general_section',
+            __('General Settings', 'ygb-chat-support'),
+            [$this, 'general_section_callback'],
+            'ygb-chat-admin'
+        );
+        
+        // Add settings fields
+        add_settings_field(
+            'ygb_chat_phone',
+            __('Chat Number', 'ygb-chat-support'),
+            [$this, 'render_phone_field'],
+            'ygb-chat-admin',
+            'ygb_chat_general_section'
+        );
+        
+        add_settings_field(
+            'ygb_chat_email',
+            __('Notification Email', 'ygb-chat-support'),
+            [$this, 'render_email_field'],
+            'ygb-chat-admin',
+            'ygb_chat_general_section'
+        );
+        
+        add_settings_field(
+            'ygb_chat_allow_anonymous',
+            __('Allow Anonymous Users', 'ygb-chat-support'),
+            [$this, 'render_allow_anonymous_field'],
+            'ygb-chat-admin',
+            'ygb_chat_general_section'
+        );
+        
         // Register all options with their sanitization callbacks
         register_setting('ygb_chat', 'ygb_chat_phone', [
             'sanitize_callback' => [$this, 'validate_phone'],
@@ -1099,6 +1132,43 @@ class YGB_Chat_Support {
         return min($offset, 100);
     }
     
+    // Settings section callback
+    public function general_section_callback() {
+        echo '<p>' . esc_html__('Configure the basic settings for the chat widget.', 'ygb-chat-support') . '</p>';
+    }
+    
+    // Settings field callbacks
+    public function render_phone_field() {
+        $phone = get_option('ygb_chat_phone', '');
+        ?>
+        <input type="text" name="ygb_chat_phone" 
+               value="<?php echo esc_attr($phone); ?>" 
+               class="regular-text" placeholder="521234567890" pattern="[0-9]+" title="<?php esc_attr_e('Only numbers', 'ygb-chat-support'); ?>">
+        <p class="description"><?php esc_html_e('International format: country code + number (only numbers, no symbols). Example: 521234567890', 'ygb-chat-support'); ?></p>
+        <?php
+    }
+    
+    public function render_email_field() {
+        $email = get_option('ygb_chat_email', get_option('admin_email'));
+        ?>
+        <input type="email" name="ygb_chat_email" 
+               value="<?php echo esc_attr($email); ?>" 
+               class="regular-text">
+        <p class="description"><?php esc_html_e('Email address to receive chat notifications', 'ygb-chat-support'); ?></p>
+        <?php
+    }
+    
+    public function render_allow_anonymous_field() {
+        $allow_anonymous = get_option('ygb_chat_allow_anonymous', false);
+        ?>
+        <label>
+            <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked($allow_anonymous, true); ?>>
+            <?php esc_html_e('Enable chat for anonymous/visitor users', 'ygb-chat-support'); ?>
+        </label>
+        <p class="description"><?php esc_html_e('If disabled, only logged-in users can send messages through the chat.', 'ygb-chat-support'); ?></p>
+        <?php
+    }
+    
     public function admin_page() {
         // Verify capabilities
         if (!current_user_can('manage_options')) {
@@ -1124,212 +1194,7 @@ class YGB_Chat_Support {
             
             <form method="post" action="options.php">
                 <?php settings_fields('ygb_chat'); ?>
-                
-                <h2 class="title"><?php esc_html_e('General Settings', 'ygb-chat-support'); ?></h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Chat Number', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="text" name="ygb_chat_phone" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_phone', '')); ?>" 
-                                   class="regular-text" placeholder="521234567890" pattern="[0-9]+" title="<?php esc_attr_e('Only numbers', 'ygb-chat-support'); ?>">
-                            <p class="description"><?php esc_html_e('International format: country code + number (only numbers, no symbols). Example: 521234567890', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Notification Email', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="email" name="ygb_chat_email" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_email', get_option('admin_email'))); ?>" 
-                                   class="regular-text">
-                            <p class="description"><?php esc_html_e('Receive email copies of messages', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Welcome Message', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <textarea name="ygb_chat_welcome" rows="3" class="large-text"><?php 
-                                echo esc_textarea(get_option('ygb_chat_welcome', __('How can we help you?', 'ygb-chat-support'))); 
-                            ?></textarea>
-                            <p class="description"><?php esc_html_e('For logged-in users, "Hello [name]" will be added automatically', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Tooltip Text', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="text" name="ygb_chat_tooltip_text" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_tooltip_text', __('Chat with support', 'ygb-chat-support'))); ?>" 
-                                   class="regular-text">
-                            <p class="description"><?php esc_html_e('Text that appears when hovering over the button', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Tooltip Background Color', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="color" name="ygb_chat_tooltip_bg_color" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_tooltip_bg_color', '#333333')); ?>">
-                            <span style="margin-left:10px;">#333333 (default dark gray)</span>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Tooltip Text Color', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="color" name="ygb_chat_tooltip_text_color" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_tooltip_text_color', '#ffffff')); ?>">
-                            <span style="margin-left:10px;">#ffffff (default white)</span>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Custom Logo', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="text" name="ygb_chat_logo" id="ygb_chat_logo"
-                                   value="<?php echo esc_attr(get_option('ygb_chat_logo', '')); ?>" 
-                                   class="regular-text">
-                            <button type="button" class="button" id="select-logo"><?php esc_html_e('Select Image', 'ygb-chat-support'); ?></button>
-                            <button type="button" class="button" id="remove-logo"><?php esc_html_e('Remove Logo', 'ygb-chat-support'); ?></button>
-                            <?php if ($logo = get_option('ygb_chat_logo')): ?>
-                                <div style="margin-top:10px;" id="logo-preview-container">
-                                    <img src="<?php echo esc_url($logo); ?>" style="max-width:100px; max-height:100px;" alt="<?php esc_attr_e('Logo preview', 'ygb-chat-support'); ?>">
-                                </div>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Logo Size (%)', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_logo_size" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_logo_size', 70)); ?>" 
-                                   class="small-text" min="30" max="100" step="5">
-                            <p class="description"><?php esc_html_e('Size of logo inside button (30-100%)', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Button Color', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="color" name="ygb_chat_button_color" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_button_color', '#25D366')); ?>">
-                            <span style="margin-left:10px;">#25D366 (default green)</span>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Button Hover Color', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="color" name="ygb_chat_button_hover_color" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_button_hover_color', '#128C7E')); ?>">
-                            <span style="margin-left:10px;">#128C7E (default dark green)</span>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Position', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <select name="ygb_chat_position">
-                                <option value="right" <?php selected(get_option('ygb_chat_position'), 'right'); ?>><?php esc_html_e('Right', 'ygb-chat-support'); ?></option>
-                                <option value="left" <?php selected(get_option('ygb_chat_position'), 'left'); ?>><?php esc_html_e('Left', 'ygb-chat-support'); ?></option>
-                            </select>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Chat Background Color', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="color" name="ygb_chat_bg_color" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_bg_color', '#ffffff')); ?>">
-                            <span style="margin-left:10px;">#ffffff (default white)</span>
-                        </td>
-                    </tr>
-                </table>
-
-                <h2 class="title"><?php esc_html_e('Desktop Settings', 'ygb-chat-support'); ?></h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Icon Size (px)', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_icon_size" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_icon_size', 60)); ?>" 
-                                   class="small-text" min="30" max="120" step="5">
-                            <p class="description"><?php esc_html_e('Button diameter on desktop (30-120px)', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Horizontal Offset (px)', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_offset_x" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_offset_x', 20)); ?>" 
-                                   class="small-text" min="0" max="200" step="1">
-                            <p class="description"><?php esc_html_e('Distance from left/right edge on desktop', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Vertical Offset (px)', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_offset_y" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_offset_y', 20)); ?>" 
-                                   class="small-text" min="0" max="200" step="1">
-                            <p class="description"><?php esc_html_e('Distance from bottom edge on desktop', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                </table>
-
-                <h2 class="title"><?php esc_html_e('Mobile Settings', 'ygb-chat-support'); ?></h2>
-                <p class="description"><?php esc_html_e('These settings apply when screen width is 768px or less', 'ygb-chat-support'); ?></p>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Icon Size (px) - Mobile', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_icon_size_mobile" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_icon_size_mobile', 50)); ?>" 
-                                   class="small-text" min="30" max="100" step="5">
-                            <p class="description"><?php esc_html_e('Button diameter on mobile (30-100px)', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Horizontal Offset (px) - Mobile', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_offset_x_mobile" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_offset_x_mobile', 10)); ?>" 
-                                   class="small-text" min="0" max="100" step="1">
-                            <p class="description"><?php esc_html_e('Distance from left/right edge on mobile', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Vertical Offset (px) - Mobile', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <input type="number" name="ygb_chat_offset_y_mobile" 
-                                   value="<?php echo esc_attr(get_option('ygb_chat_offset_y_mobile', 10)); ?>" 
-                                   class="small-text" min="0" max="100" step="1">
-                            <p class="description"><?php esc_html_e('Distance from bottom edge on mobile', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                </table>
-                
-                <h2 class="title"><?php esc_html_e('Access Control', 'ygb-chat-support'); ?></h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Allow Anonymous Users', 'ygb-chat-support'); ?></th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked(get_option('ygb_chat_allow_anonymous', false), true); ?>>
-                                <?php esc_html_e('Enable chat for anonymous/visitor users', 'ygb-chat-support'); ?>
-                            </label>
-                            <p class="description"><?php esc_html_e('If disabled, only logged-in users can send messages through the chat.', 'ygb-chat-support'); ?></p>
-                        </td>
-                    </tr>
-                </table>
-                
+                <?php do_settings_sections('ygb-chat-admin'); ?>
                 <?php submit_button(__('Save Changes', 'ygb-chat-support')); ?>
             </form>
             

@@ -164,28 +164,8 @@ class YGB_Chat_Support {
      * @return bool
      */
     private function can_send_message() {
-        if (!is_user_logged_in()) {
-            return true; // Visitors can always send
-        }
-        
-        $allowed_roles = apply_filters('ygb_chat_allowed_roles', [
-            'administrator',
-            'editor',
-            'author',
-            'contributor',
-            'subscriber'
-        ]);
-        
-        $current_user = wp_get_current_user();
-        $user_roles = (array) $current_user->roles;
-        
-        foreach ($user_roles as $role) {
-            if (in_array($role, $allowed_roles, true)) {
-                return true;
-            }
-        }
-        
-        return false;
+        // All users (logged in and visitors) can send messages
+        return true;
     }
     
     public function enqueue_assets() {

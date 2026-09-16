@@ -3,7 +3,7 @@ Contributors: ygb
 Tags: chat, support, whatsapp, woocommerce, customer-service, live-chat
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 3.0.4
+Stable tag: 3.0.5
 Requires PHP: 8.0
 Tested PHP: 8.2
 License: GPLv2 or later
@@ -29,7 +29,7 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 * 👤 **Role Management**: Configurable user roles for message permissions
 * 🔐 **Access Control**: Optional setting to restrict chat to logged-in users only
 
-### 🛡️ Security Features (v3.0.4)
+### 🛡️ Security Features (v3.0.5)
 
 | Feature | Description |
 |---------|-------------|
@@ -49,6 +49,14 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 | **GDPR Compliance** | Hashed IP addresses in emails, user agent omitted by default |
 | **Session Security** | Automatic nonce refresh for long sessions |
 | **Zero jQuery Dependency** | 100% Vanilla JavaScript for improved security and performance |
+| **Proper Script Loading** | Custom script handles ensure JavaScript loads for all users (frontend & admin) |
+
+**🔄 What's New in v3.0.5:**
+
+- 🐛 **CRITICAL FIX**: Chat widget now works for non-authenticated users on frontend
+- 🐛 **FIXED**: Replaced wp-i18n handle with custom ygb-chat-js to ensure proper script loading
+- ✨ **IMPROVED**: AJAX URL now uses relative path for better cross-installation compatibility
+- ⚠️ **NOTE**: Versions 3.0.4 and earlier had broken chat functionality for anonymous users
 
 **🔄 What's New in v3.0.4:**
 
@@ -171,6 +179,16 @@ WooCommerce: 5.0 or higher (optional)
 Caching Plugins: Compatible with all major caching plugins (W3 Total Cache, WP Super Cache, LiteSpeed Cache, etc.)
 
 == Changelog ==
+= 3.0.5 - 2026-09-08 =
+
+🐛 CRITICAL BUG FIX:
+- Fixed: Chat widget JavaScript now loads correctly for non-authenticated users on frontend
+- Fixed: Replaced wp-i18n script handle with custom ygb-chat-js handle to ensure proper script loading
+- Fixed: Inline script and localized data now attach correctly for all visitors (logged-in and anonymous)
+- Improved: AJAX URL now uses relative path for better compatibility across different WordPress installations
+
+⚠️ IMPORTANT: Previous versions (3.0.4 and earlier) had a critical issue where the chat widget would appear but not function for non-logged-in users. This was caused by using wp-i18n as a script handle, which only loads in admin areas. If you allow anonymous users to send messages, this update is essential.
+
 = 3.0.4 - 2026-09-08 =
 
 🐛 BUG FIXES:
@@ -284,6 +302,9 @@ Initial public release
 Core chat features
 
 == Upgrade Notice ==
+
+= 3.0.5 =
+Critical bug fix release: Fixes chat widget not working for non-authenticated users on frontend. The issue was caused by using wp-i18n as a script handle, which only loads in admin areas. This update replaces it with a custom handle (ygb-chat-js) ensuring JavaScript loads for all visitors. Essential update if you allow anonymous users to send messages.
 
 = 3.0.4 =
 Bug fix and feature release: Fixes chat button click handler that prevented the chat window from opening. Removes contradictory logic in toggle function. Adds new "Access Control" section with option to enable/disable chat for anonymous users. All users should update to restore chat functionality and gain granular control over message permissions.

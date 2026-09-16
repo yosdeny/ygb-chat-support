@@ -3,7 +3,7 @@ Contributors: ygb
 Tags: chat, support, whatsapp, woocommerce, customer-service, live-chat
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 Requires PHP: 8.0
 Tested PHP: 8.2
 License: GPLv2 or later
@@ -28,7 +28,7 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 * 🌐 **Proxy Support**: Works with Cloudflare, load balancers, and reverse proxies
 * 👤 **Role Management**: Configurable user roles for message permissions
 
-### 🛡️ Security Features (v3.0.3)
+### 🛡️ Security Features (v3.0.4)
 
 | Feature | Description |
 |---------|-------------|
@@ -48,6 +48,13 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 | **GDPR Compliance** | Hashed IP addresses in emails, user agent omitted by default |
 | **Session Security** | Automatic nonce refresh for long sessions |
 | **Zero jQuery Dependency** | 100% Vanilla JavaScript for improved security and performance |
+
+**🔄 What's New in v3.0.4:**
+
+- 🐛 **FIXED**: Chat button click handler now properly toggles chat window visibility
+- 🐛 **FIXED**: Removed contradictory logic in chat toggle function
+- ✨ **IMPROVED**: Simplified event handling for better reliability across browsers
+- 📋 **UPDATED**: All users can now send messages regardless of role or login status
 
 **🔄 What's New in v3.0.3:**
 
@@ -153,6 +160,18 @@ WooCommerce: 5.0 or higher (optional)
 Caching Plugins: Compatible with all major caching plugins (W3 Total Cache, WP Super Cache, LiteSpeed Cache, etc.)
 
 == Changelog ==
+= 3.0.4 - 2026-09-08 =
+
+🐛 BUG FIXES:
+- Fixed: Chat button click handler now properly toggles chat window visibility
+- Fixed: Removed contradictory logic in chat toggle function that prevented window from opening
+- Fixed: Simplified event handling for better reliability across all browsers
+
+✨ IMPROVEMENTS:
+- Improved: All users can now send messages regardless of role or login status
+- Improved: Cleaner code structure for chat widget initialization
+- Improved: Better user experience with consistent toggle behavior
+
 = 3.0.3 - 2026-09-08 =
 
 🔒 CRITICAL SECURITY FIXES:
@@ -250,6 +269,9 @@ Initial public release
 Core chat features
 
 == Upgrade Notice ==
+
+= 3.0.4 =
+Bug fix release: Fixes chat button click handler that prevented the chat window from opening. Removes contradictory logic in toggle function. All users should update to restore chat functionality.
 
 = 3.0.3 =
 Critical security release: Blocks SVG uploads by default, validates URLs for WhatsApp links, hashes IPs in emails (GDPR), removes jQuery dependency, adds auto-refresh nonce. All users should update immediately. Note: SVG logos now require explicit filter approval.

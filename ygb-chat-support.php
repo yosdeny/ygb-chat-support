@@ -53,6 +53,9 @@ class YGB_Chat_Support {
     private static $instance = null;
     
     private function __construct() {
+        // Self-repair mechanism: Ensure all required options exist on every load
+        add_action('plugins_loaded', [$this, 'self_repair_options'], 1);
+        
         add_action('wp_footer', [$this, 'render_chat']);
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
@@ -78,6 +81,40 @@ class YGB_Chat_Support {
             self::$instance = new self();
         }
         return self::$instance;
+    }
+    
+    /**
+     * Self-repair mechanism: Ensure all required plugin options exist in the database.
+     * This runs on every page load to fix missing options without requiring reactivation.
+     * Only adds missing options, never deletes or modifies existing data.
+     */
+    public function self_repair_options() {
+        // Check and create ygb_chat_allow_anonymous option if missing
+        // Default is FALSE - anonymous users CANNOT see chat by default
+        if (false === get_option('ygb_chat_allow_anonymous', null)) {
+            add_option('ygb_chat_allow_anonymous', false);
+        }
+        
+        // Ensure other critical options exist (without overwriting existing values)
+        if (false === get_option('ygb_chat_operator_email', null)) {
+            add_option('ygb_chat_operator_email', get_option('admin_email'));
+        }
+        
+        if (false === get_option('ygb_chat_greeting', null)) {
+            add_option('ygb_chat_greeting', '¡Hola! ¿En qué podemos ayudarte hoy?');
+        }
+        
+        if (false === get_option('ygb_chat_offline_message', null)) {
+            add_option('ygb_chat_offline_message', 'Actualmente estamos fuera de línea. Déjanos un mensaje y te responderemos pronto.');
+        }
+        
+        if (false === get_option('ygb_chat_working_hours', null)) {
+            add_option('ygb_chat_working_hours', '9:00-18:00');
+        }
+        
+        if (false === get_option('ygb_chat_timezone', null)) {
+            add_option('ygb_chat_timezone', wp_timezone_string());
+        }
     }
     
     public function load_textdomain() {

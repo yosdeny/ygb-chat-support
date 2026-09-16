@@ -164,8 +164,19 @@ class YGB_Chat_Support {
      * @return bool
      */
     private function can_send_message() {
-        // All users (logged in and visitors) can send messages
-        return true;
+        // Get the admin setting for anonymous access
+        $allow_anonymous = get_option('ygb_chat_allow_anonymous', true);
+        
+        // Allow developers to override the setting via filter
+        $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
+        
+        // If anonymous users are allowed, everyone can send messages
+        if ($allow_anonymous) {
+            return true;
+        }
+        
+        // Otherwise, only logged-in users can send messages
+        return is_user_logged_in();
     }
     
     public function enqueue_assets() {
@@ -997,6 +1008,13 @@ class YGB_Chat_Support {
             'sanitize_callback' => [$this, 'sanitize_offset_mobile'],
             'type' => 'integer'
         ]);
+        
+        register_setting('ygb_chat', 'ygb_chat_allow_anonymous', [
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'type' => 'boolean',
+            'default' => true,
+            'description' => __('Allow anonymous users to send messages', 'ygb-chat-support')
+        ]);
     }
     
     // Sanitization callbacks
@@ -1246,6 +1264,20 @@ class YGB_Chat_Support {
                                    value="<?php echo esc_attr(get_option('ygb_chat_offset_y_mobile', 10)); ?>" 
                                    class="small-text" min="0" max="100" step="1">
                             <p class="description"><?php esc_html_e('Distance from bottom edge on mobile', 'ygb-chat-support'); ?></p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <h2 class="title"><?php esc_html_e('Access Control', 'ygb-chat-support'); ?></h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php esc_html_e('Allow Anonymous Users', 'ygb-chat-support'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked(get_option('ygb_chat_allow_anonymous', true), true); ?>>
+                                <?php esc_html_e('Enable chat for anonymous/visitor users', 'ygb-chat-support'); ?>
+                            </label>
+                            <p class="description"><?php esc_html_e('If disabled, only logged-in users can send messages through the chat.', 'ygb-chat-support'); ?></p>
                         </td>
                     </tr>
                 </table>

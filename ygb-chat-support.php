@@ -182,6 +182,10 @@ class YGB_Chat_Support {
     public function enqueue_assets() {
         wp_enqueue_style('ygb-chat-css', YGB_CHAT_PLUGIN_URL . 'assets/chat.css', [], YGB_CHAT_VERSION);
         
+        // Create and enqueue a custom script handle (works for all users, including non-authenticated)
+        wp_register_script('ygb-chat-js', false, [], YGB_CHAT_VERSION, true);
+        wp_enqueue_script('ygb-chat-js');
+        
         // Get user info if logged in
         $user_name = '';
         $user_email = '';
@@ -198,16 +202,16 @@ class YGB_Chat_Support {
         $ajax_nonce = wp_create_nonce('ygb_chat_ajax_nonce');
         $nonce_timestamp = time();
         
-        // Enqueue inline script with vanilla JS (no jQuery dependency)
+        // Enqueue inline script with vanilla JS (no jQuery dependency) using custom handle
         wp_add_inline_script(
-            'wp-i18n',
+            'ygb-chat-js',
             $this->get_chat_script($ajax_nonce, $nonce_timestamp, $user_name, $user_email),
             'after'
         );
         
-        // Localize data for the script
-        wp_localize_script('wp-i18n', 'ygb_chat', [
-            'ajax_url' => admin_url('admin-ajax.php'),
+        // Localize data for the script using custom handle
+        wp_localize_script('ygb-chat-js', 'ygb_chat', [
+            'ajax_url' => admin_url('admin-ajax.php', 'relative'),
             'nonce' => $ajax_nonce,
             'nonce_timestamp' => $nonce_timestamp,
             'nonce_lifetime' => apply_filters('ygb_chat_nonce_lifetime', 3600), // Default 1 hour
@@ -494,9 +498,13 @@ class YGB_Chat_Support {
         }
         wp_enqueue_media();
         
-        // Add nonce for admin security - no jQuery needed, inline script
+        // Create and enqueue a custom script handle for admin
+        wp_register_script('ygb-chat-admin-js', false, [], YGB_CHAT_VERSION, true);
+        wp_enqueue_script('ygb-chat-admin-js');
+        
+        // Add nonce for admin security using custom handle
         wp_add_inline_script(
-            'wp-i18n',
+            'ygb-chat-admin-js',
             'window.ygb_admin = { nonce: "' . esc_js(wp_create_nonce('ygb_chat_admin_nonce')) . '" };',
             'after'
         );

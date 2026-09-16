@@ -198,6 +198,9 @@ class YGB_Chat_Support {
     /**
      * Check if current user can send messages
      * 
+     * Policy: If "Allow Anonymous" is enabled, skip ALL permission checks (no login, no roles, no capabilities).
+     * If disabled, only logged-in users can send messages.
+     * 
      * @return bool
      */
     private function can_send_message() {
@@ -207,7 +210,7 @@ class YGB_Chat_Support {
         // Allow developers to override the setting via filter
         $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
         
-        // If anonymous users are allowed, everyone can send messages
+        // If anonymous users are allowed, skip ALL permission checks - completely open chat
         if ($allow_anonymous) {
             return true;
         }
@@ -603,14 +606,13 @@ class YGB_Chat_Support {
         }
         
         // Check if anonymous users are allowed to see the chat
-        if (!is_user_logged_in()) {
-            $allow_anonymous = get_option('ygb_chat_allow_anonymous', false);
-            $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
-            
-            // If anonymous users are not allowed, don't render the chat
-            if (!$allow_anonymous) {
-                return;
-            }
+        $allow_anonymous = get_option('ygb_chat_allow_anonymous', false);
+        $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
+        
+        // Policy: If anonymous is enabled, show chat to EVERYONE (no permission checks)
+        // If disabled, only show to logged-in users
+        if (!$allow_anonymous && !is_user_logged_in()) {
+            return;
         }
         
         $phone = get_option('ygb_chat_phone', '');
@@ -1165,7 +1167,7 @@ class YGB_Chat_Support {
             <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked($allow_anonymous, true); ?>>
             <?php esc_html_e('Enable chat for anonymous/visitor users', 'ygb-chat-support'); ?>
         </label>
-        <p class="description"><?php esc_html_e('If disabled, only logged-in users can send messages through the chat.', 'ygb-chat-support'); ?></p>
+        <p class="description"><?php esc_html_e('If enabled: Chat is completely open - NO permission checks (any visitor can send messages). If disabled: Only logged-in users can see and use the chat.', 'ygb-chat-support'); ?></p>
         <?php
     }
     

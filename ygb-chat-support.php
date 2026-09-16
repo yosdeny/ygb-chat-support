@@ -165,7 +165,7 @@ class YGB_Chat_Support {
      */
     private function can_send_message() {
         // Get the admin setting for anonymous access
-        $allow_anonymous = get_option('ygb_chat_allow_anonymous', true);
+        $allow_anonymous = get_option('ygb_chat_allow_anonymous', false);
         
         // Allow developers to override the setting via filter
         $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
@@ -1274,7 +1274,7 @@ class YGB_Chat_Support {
                         <th scope="row"><?php esc_html_e('Allow Anonymous Users', 'ygb-chat-support'); ?></th>
                         <td>
                             <label>
-                                <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked(get_option('ygb_chat_allow_anonymous', true), true); ?>>
+                                <input type="checkbox" name="ygb_chat_allow_anonymous" value="1" <?php checked(get_option('ygb_chat_allow_anonymous', false), true); ?>>
                                 <?php esc_html_e('Enable chat for anonymous/visitor users', 'ygb-chat-support'); ?>
                             </label>
                             <p class="description"><?php esc_html_e('If disabled, only logged-in users can send messages through the chat.', 'ygb-chat-support'); ?></p>

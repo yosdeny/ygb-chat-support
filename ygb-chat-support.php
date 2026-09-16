@@ -1389,6 +1389,25 @@ class YGB_Chat_Support {
 // Initialize the plugin
 YGB_Chat_Support::get_instance();
 
+// Activation hook to create default options in database
+register_activation_hook(__FILE__, function() {
+    // Create default options if they don't exist
+    add_option('ygb_chat_operator_email', get_option('admin_email'));
+    add_option('ygb_chat_greeting', '¡Hola! ¿En qué podemos ayudarte hoy?');
+    add_option('ygb_chat_offline_message', 'Actualmente estamos fuera de línea. Déjanos un mensaje y te responderemos pronto.');
+    add_option('ygb_chat_working_hours', '9:00-18:00');
+    add_option('ygb_chat_timezone', wp_timezone_string());
+    
+    // CRITICAL: Create the anonymous access option explicitly
+    // Default is FALSE (disabled) - anonymous users CANNOT see chat by default
+    add_option('ygb_chat_allow_anonymous', false);
+    
+    // Schedule cleanup task
+    if (!wp_next_scheduled('ygb_chat_cleanup_transients')) {
+        wp_schedule_event(time(), 'daily', 'ygb_chat_cleanup_transients');
+    }
+});
+
 // Deactivation hook to clean up scheduled events
 register_deactivation_hook(__FILE__, function() {
     wp_clear_scheduled_hook('ygb_chat_cleanup_transients');

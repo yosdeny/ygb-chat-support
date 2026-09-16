@@ -565,6 +565,17 @@ class YGB_Chat_Support {
             return;
         }
         
+        // Check if anonymous users are allowed to see the chat
+        if (!is_user_logged_in()) {
+            $allow_anonymous = get_option('ygb_chat_allow_anonymous', false);
+            $allow_anonymous = apply_filters('ygb_chat_allow_anonymous', $allow_anonymous);
+            
+            // If anonymous users are not allowed, don't render the chat
+            if (!$allow_anonymous) {
+                return;
+            }
+        }
+        
         $phone = get_option('ygb_chat_phone', '');
         if (empty($phone)) {
             return;

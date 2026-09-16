@@ -27,6 +27,7 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 * 🛡️ **GDPR Friendly**: No personal data stored, messages go directly to your chat
 * 🌐 **Proxy Support**: Works with Cloudflare, load balancers, and reverse proxies
 * 👤 **Role Management**: Configurable user roles for message permissions
+* 🔐 **Access Control**: Optional setting to restrict chat to logged-in users only
 
 ### 🛡️ Security Features (v3.0.4)
 
@@ -54,7 +55,8 @@ YGB Chat Support is a comprehensive chat solution that connects your customers d
 - 🐛 **FIXED**: Chat button click handler now properly toggles chat window visibility
 - 🐛 **FIXED**: Removed contradictory logic in chat toggle function
 - ✨ **IMPROVED**: Simplified event handling for better reliability across browsers
-- 📋 **UPDATED**: All users can now send messages regardless of role or login status
+- ✨ **NEW**: Optional setting to enable/disable chat for anonymous users (Access Control)
+- 📋 **UPDATED**: Added "Allow Anonymous Users" checkbox in admin settings
 
 **🔄 What's New in v3.0.3:**
 
@@ -148,6 +150,15 @@ add_filter('ygb_chat_allow_svg', '__return_true');
 
 // Include user agent in email notifications (for debugging)
 add_filter('ygb_chat_include_user_agent', '__return_true');
+
+// Control anonymous access programmatically (overrides admin setting)
+add_filter('ygb_chat_allow_anonymous', function($allowed) {
+    // Example: Only allow anonymous on specific pages
+    if (is_product()) {
+        return true;
+    }
+    return false;
+});
 ```
 
 💻 Compatibility
@@ -167,10 +178,14 @@ Caching Plugins: Compatible with all major caching plugins (W3 Total Cache, WP S
 - Fixed: Removed contradictory logic in chat toggle function that prevented window from opening
 - Fixed: Simplified event handling for better reliability across all browsers
 
+✨ NEW FEATURES:
+- New: Optional setting to enable/disable chat for anonymous users (Access Control section)
+- New: Added "Allow Anonymous Users" checkbox in admin settings panel
+
 ✨ IMPROVEMENTS:
-- Improved: All users can now send messages regardless of role or login status
 - Improved: Cleaner code structure for chat widget initialization
 - Improved: Better user experience with consistent toggle behavior
+- Improved: Granular control over who can send messages (logged-in users only or everyone)
 
 = 3.0.3 - 2026-09-08 =
 
@@ -271,7 +286,7 @@ Core chat features
 == Upgrade Notice ==
 
 = 3.0.4 =
-Bug fix release: Fixes chat button click handler that prevented the chat window from opening. Removes contradictory logic in toggle function. All users should update to restore chat functionality.
+Bug fix and feature release: Fixes chat button click handler that prevented the chat window from opening. Removes contradictory logic in toggle function. Adds new "Access Control" section with option to enable/disable chat for anonymous users. All users should update to restore chat functionality and gain granular control over message permissions.
 
 = 3.0.3 =
 Critical security release: Blocks SVG uploads by default, validates URLs for WhatsApp links, hashes IPs in emails (GDPR), removes jQuery dependency, adds auto-refresh nonce. All users should update immediately. Note: SVG logos now require explicit filter approval.

@@ -1012,7 +1012,7 @@ class YGB_Chat_Support {
         register_setting('ygb_chat', 'ygb_chat_allow_anonymous', [
             'sanitize_callback' => 'rest_sanitize_boolean',
             'type' => 'boolean',
-            'default' => true,
+            'default' => false,
             'description' => __('Allow anonymous users to send messages', 'ygb-chat-support')
         ]);
     }

@@ -316,13 +316,11 @@ class YGB_Chat_Support {
                 // Toggle chat window
                 $button.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    $window.style.display = $window.style.display === 'none' ? 'block' : 'block';
-                    if ($window.style.display === 'block') {
+                    if ($window.style.display === 'none' || $window.style.display === '') {
                         $window.style.display = 'block';
                     } else {
-                        $window.style.display = 'block';
+                        $window.style.display = 'none';
                     }
-                    $window.style.display = ($window.style.display === 'none' || $window.style.display === '') ? 'block' : 'none';
                 });
                 
                 if ($close) {
